@@ -17,7 +17,7 @@ None
 - [x] **Phase 1: Plugin Format Specification** - Define unified plugin structure that scales from simple to complex
 - [x] **Phase 2: Plugin Installation** - Package-manager style install from git repos and local paths
 - [x] **Phase 3: Plugin Discovery** - List available and installed plugins
-- [ ] **Phase 4: Plugin Activation** - Command-based activation with optional parameters
+- [x] **Phase 4: Plugin Activation** - Command-based activation with optional parameters
 - [ ] **Phase 5: Self-Contained Dependencies** - Docker and service support within plugin folders
 - [ ] **Phase 6: Documentation** - Plugin development guide with basic-to-complex examples
 
@@ -63,8 +63,8 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: Plugin enable/disable commands
-- [ ] 04-02: Plugin command namespace integration
+- [x] 04-01: Plugin enable/disable commands
+- [x] 04-02: Plugin command namespace integration
 
 ### Phase 5: Self-Contained Dependencies
 **Goal**: Support plugins that include Docker containers and services, with automatic lifecycle management
@@ -98,6 +98,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Plugin Format Specification | 3/3 | Complete | 2026-01-16 |
 | 2. Plugin Installation | 3/3 | Complete | 2026-01-16 |
 | 3. Plugin Discovery | 2/2 | Complete | 2026-01-16 |
-| 4. Plugin Activation | 0/2 | Not started | - |
+| 4. Plugin Activation | 2/2 | Complete | 2026-01-16 |
 | 5. Self-Contained Dependencies | 0/3 | Not started | - |
 | 6. Documentation | 0/2 | Not started | - |
