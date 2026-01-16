@@ -533,6 +533,66 @@ function showHelp() {
 }
 
 /**
+ * List all installed plugins
+ */
+function listPlugins() {
+  const configDir = getConfigDir();
+
+  // Skip known non-plugin directories
+  const skipDirs = ['commands', 'agents', 'get-shit-done'];
+
+  // Check if config directory exists
+  if (!fs.existsSync(configDir)) {
+    console.log(`\n  No plugins installed.`);
+    return;
+  }
+
+  // Scan for directories containing plugin.json
+  const entries = fs.readdirSync(configDir, { withFileTypes: true });
+  const plugins = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (skipDirs.includes(entry.name)) continue;
+
+    const manifestPath = path.join(configDir, entry.name, 'plugin.json');
+    if (!fs.existsSync(manifestPath)) continue;
+
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      plugins.push({
+        name: manifest.name || entry.name,
+        version: manifest.version || 'unknown',
+        description: manifest.description || '',
+        linked: manifest._installed?.linked === true,
+        date: manifest._installed?.date,
+      });
+    } catch {
+      // Warn about corrupted plugin.json but continue
+      console.log(`  ${yellow}Warning:${reset} Corrupted plugin.json in ${entry.name}/`);
+    }
+  }
+
+  // Display results
+  if (plugins.length === 0) {
+    console.log(`\n  No plugins installed.`);
+    return;
+  }
+
+  console.log(`\n  ${cyan}Installed Plugins:${reset}\n`);
+
+  for (const plugin of plugins) {
+    const linkedIndicator = plugin.linked ? ` ${yellow}(linked)${reset}` : '';
+    console.log(`  ${cyan}${plugin.name}${reset} v${plugin.version}${linkedIndicator}`);
+    if (plugin.description) {
+      console.log(`    ${dim}${plugin.description}${reset}`);
+    }
+  }
+
+  console.log('');
+}
+
+/**
  * Check for existing plugin installation and handle conflicts
  */
 function checkExistingInstallation(pluginName, configDir) {
