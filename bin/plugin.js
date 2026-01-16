@@ -279,6 +279,113 @@ function createSymlink(src, dest, type) {
 }
 
 /**
+ * Check if Docker Compose is available
+ * Returns { available: boolean, command: 'docker compose' | 'docker-compose' | null }
+ */
+function isDockerAvailable() {
+  // Try modern Docker CLI first (docker compose)
+  try {
+    execSync('docker compose version', { stdio: 'pipe' });
+    return { available: true, command: 'docker compose' };
+  } catch {
+    // Fallback to legacy docker-compose
+    try {
+      execSync('docker-compose --version', { stdio: 'pipe' });
+      return { available: true, command: 'docker-compose' };
+    } catch {
+      return { available: false, command: null };
+    }
+  }
+}
+
+/**
+ * Get service configuration from installed plugin manifest
+ */
+function getServiceConfig(pluginName) {
+  const configDir = getConfigDir();
+  const manifestPath = path.join(configDir, pluginName, 'plugin.json');
+
+  try {
+    if (!fs.existsSync(manifestPath)) {
+      return null;
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    return manifest.gsd?.services || null;
+  } catch {
+    // Return null gracefully if manifest is corrupted
+    return null;
+  }
+}
+
+/**
+ * Start Docker services for a plugin
+ */
+function startServices(pluginName) {
+  const services = getServiceConfig(pluginName);
+  if (!services || !services['docker-compose']) {
+    return false;
+  }
+
+  const docker = isDockerAvailable();
+  if (!docker.available) {
+    console.log(`  ${yellow}Warning:${reset} Docker not available, skipping services for ${pluginName}`);
+    return false;
+  }
+
+  const configDir = getConfigDir();
+  const composePath = path.join(configDir, pluginName, services['docker-compose']);
+
+  if (!fs.existsSync(composePath)) {
+    console.log(`  ${yellow}Warning:${reset} Docker Compose file not found: ${composePath}`);
+    return false;
+  }
+
+  try {
+    console.log(`  Starting services for ${cyan}${pluginName}${reset}...`);
+    execSync(`${docker.command} -f "${composePath}" up -d`, { stdio: 'pipe' });
+    console.log(`  ${green}✓${reset} Services started`);
+    return true;
+  } catch (err) {
+    console.log(`  ${yellow}Warning:${reset} Failed to start services: ${err.message}`);
+    return false;
+  }
+}
+
+/**
+ * Stop Docker services for a plugin
+ */
+function stopServices(pluginName) {
+  const services = getServiceConfig(pluginName);
+  if (!services || !services['docker-compose']) {
+    return false;
+  }
+
+  const docker = isDockerAvailable();
+  if (!docker.available) {
+    console.log(`  ${yellow}Warning:${reset} Docker not available, skipping service shutdown for ${pluginName}`);
+    return false;
+  }
+
+  const configDir = getConfigDir();
+  const composePath = path.join(configDir, pluginName, services['docker-compose']);
+
+  if (!fs.existsSync(composePath)) {
+    console.log(`  ${yellow}Warning:${reset} Docker Compose file not found: ${composePath}`);
+    return false;
+  }
+
+  try {
+    console.log(`  Stopping services for ${cyan}${pluginName}${reset}...`);
+    execSync(`${docker.command} -f "${composePath}" down`, { stdio: 'pipe' });
+    console.log(`  ${green}✓${reset} Services stopped`);
+    return true;
+  } catch (err) {
+    console.log(`  ${yellow}Warning:${reset} Failed to stop services: ${err.message}`);
+    return false;
+  }
+}
+
+/**
  * Install plugin files to Claude config directory
  */
 function installPluginFiles(pluginDir, manifest, options = {}) {
