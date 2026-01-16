@@ -386,6 +386,107 @@ function stopServices(pluginName) {
 }
 
 /**
+ * Check health of plugin services by running health check script
+ * Returns: { status: 'healthy'|'unhealthy'|'no-services'|'no-healthcheck'|'missing-script'|'error', error?, path? }
+ */
+function checkServiceHealth(pluginName) {
+  const services = getServiceConfig(pluginName);
+  if (!services) {
+    return { status: 'no-services' };
+  }
+
+  if (!services.healthCheck) {
+    return { status: 'no-healthcheck' };
+  }
+
+  const configDir = getConfigDir();
+  const pluginDir = path.join(configDir, pluginName);
+  const healthCheckPath = path.join(pluginDir, services.healthCheck);
+
+  // Verify script exists
+  if (!fs.existsSync(healthCheckPath)) {
+    return { status: 'missing-script', path: healthCheckPath };
+  }
+
+  try {
+    execSync(healthCheckPath, { cwd: pluginDir, stdio: 'pipe' });
+    return { status: 'healthy' };
+  } catch (err) {
+    // Process exited with non-zero code
+    const stderr = err.stderr ? err.stderr.toString().trim() : err.message;
+    return { status: 'unhealthy', error: stderr };
+  }
+}
+
+/**
+ * Get service running status from Docker
+ * Returns: { running: boolean, containers?: number, reason?: string, error?: string }
+ */
+function getServiceStatus(pluginName) {
+  const services = getServiceConfig(pluginName);
+  if (!services || !services['docker-compose']) {
+    return { running: false, reason: 'no-services' };
+  }
+
+  const docker = isDockerAvailable();
+  if (!docker.available) {
+    return { running: false, reason: 'no-docker' };
+  }
+
+  const configDir = getConfigDir();
+  const composePath = path.join(configDir, pluginName, services['docker-compose']);
+
+  if (!fs.existsSync(composePath)) {
+    return { running: false, reason: 'no-compose-file' };
+  }
+
+  try {
+    // Try with --format json first (modern docker compose)
+    let output;
+    try {
+      output = execSync(`${docker.command} -f "${composePath}" ps --format json`, { stdio: 'pipe' }).toString();
+    } catch {
+      // Fallback to plain output for older docker-compose
+      output = execSync(`${docker.command} -f "${composePath}" ps`, { stdio: 'pipe' }).toString();
+    }
+
+    // Parse JSON output (one JSON object per line for modern docker compose)
+    if (output.trim().startsWith('{') || output.trim().startsWith('[')) {
+      const lines = output.trim().split('\n').filter(line => line.trim());
+      let runningCount = 0;
+
+      for (const line of lines) {
+        try {
+          const container = JSON.parse(line);
+          // Check if container is running (State can be "running" or Status contains "Up")
+          if (container.State === 'running' || (container.Status && container.Status.toLowerCase().includes('up'))) {
+            runningCount++;
+          }
+        } catch {
+          // Skip invalid JSON lines
+        }
+      }
+
+      return { running: runningCount > 0, containers: runningCount };
+    }
+
+    // Parse plain text output (legacy docker-compose)
+    // Look for lines with "Up" status
+    const lines = output.split('\n');
+    let runningCount = 0;
+    for (const line of lines) {
+      if (line.toLowerCase().includes(' up ')) {
+        runningCount++;
+      }
+    }
+
+    return { running: runningCount > 0, containers: runningCount };
+  } catch (err) {
+    return { running: false, reason: 'error', error: err.message };
+  }
+}
+
+/**
  * Install plugin files to Claude config directory
  */
 function installPluginFiles(pluginDir, manifest, options = {}) {
