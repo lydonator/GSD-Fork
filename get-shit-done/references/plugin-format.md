@@ -582,15 +582,67 @@ volumes:
 ```
 
 **Service lifecycle:**
-- Services start when plugin is enabled
-- Services stop when plugin is disabled
+- Services start when plugin is installed and enabled
+- Services stop when plugin is disabled or uninstalled
 - Health checks verify service availability
+- Disabling a plugin stops services but keeps configuration files
+- Re-enabling restarts services using existing configuration
 
 **For plugins without services:**
 Set `services` to `null` or omit the field entirely.
 
 *Detailed service implementation in Phase 5 (Self-Contained Dependencies)*
 </services_overview>
+
+<activation_behavior>
+## Activation Behavior
+
+Plugins have an enabled/disabled state that controls their availability without removing files.
+
+**Default state:**
+- Plugins are enabled by default on installation
+- The `_installed.enabled` flag in plugin.json controls activation state
+- If `_installed.enabled` is not set, the plugin is considered enabled (backwards compatibility)
+
+**Enabled vs Disabled:**
+
+| State | Commands | Hooks | Services |
+|-------|----------|-------|----------|
+| Enabled | Visible and usable via `/pluginname:command` | Fire on lifecycle events | Start and run |
+| Disabled | Hidden from `/gsd:plugin commands` | Don't fire | Don't start |
+
+**Enable/Disable workflow:**
+```bash
+# Disable a plugin (keeps all files)
+plugin disable my-plugin
+
+# Enable a disabled plugin
+plugin enable my-plugin
+```
+
+**Key differences from uninstall:**
+- `disable` keeps all plugin files in place, just marks as inactive
+- `uninstall` removes all plugin files from `~/.claude/`
+- Disabled plugins can be instantly re-enabled without reinstallation
+- Useful for troubleshooting, testing, or temporarily turning off functionality
+
+**Checking plugin status:**
+- `/gsd:plugin list` shows all plugins with `(disabled)` indicator for disabled ones
+- `/gsd:plugin commands` shows only commands from enabled plugins
+- `/gsd:plugin info <name>` shows detailed information regardless of enabled state
+
+**Example enable/disable workflow:**
+```bash
+# Troubleshooting: disable a plugin to isolate an issue
+plugin disable neo4j-knowledge-graph
+
+# Test without the plugin
+# ... run your tests ...
+
+# Re-enable when done
+plugin enable neo4j-knowledge-graph
+```
+</activation_behavior>
 
 <validation_rules>
 ## Validation Rules
