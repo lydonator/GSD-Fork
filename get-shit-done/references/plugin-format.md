@@ -62,6 +62,323 @@ The `gsd` object contains plugin-specific configuration:
 
 </manifest_schema>
 
+<folder_structure>
+## Folder Structure
+
+Plugins follow a standardized directory layout that mirrors GSD's core structure.
+
+**Directory layout:**
+```
+my-plugin/
+├── plugin.json          # Manifest (required)
+├── README.md            # Plugin documentation (required)
+├── commands/            # Commands (optional)
+│   └── *.md            # Each file = one slash command
+├── agents/              # Subagents (optional)
+│   └── *.md            # Each file = one agent
+├── workflows/           # Workflows (optional)
+│   └── *.md            # Referenced by commands
+├── templates/           # Templates (optional)
+│   └── *.md            # File templates
+├── references/          # Reference docs (optional)
+│   └── *.md            # Implementation guides
+├── docker/              # Services (optional)
+│   ├── docker-compose.yml
+│   └── Dockerfile
+└── hooks/               # Lifecycle hooks (optional)
+    └── *.md            # Hook handlers
+```
+
+**Directory purposes:**
+
+| Directory | Purpose | Required |
+|-----------|---------|----------|
+| `commands/` | Slash commands users invoke directly | No |
+| `agents/` | Subagent definitions for task execution | No |
+| `workflows/` | Multi-step procedures called by commands | No |
+| `templates/` | Document templates for file generation | No |
+| `references/` | Implementation guides and docs | No |
+| `hooks/` | GSD lifecycle event handlers | No |
+| `docker/` | Docker Compose and service configs | No |
+
+**Installation mapping:**
+
+When a plugin is installed, files are copied to the GSD configuration directory:
+
+| Plugin Path | Installed To |
+|-------------|--------------|
+| `commands/*.md` | `~/.claude/commands/{plugin-name}/*.md` |
+| `agents/*.md` | `~/.claude/agents/*.md` |
+| `workflows/*.md` | `~/.claude/{plugin-name}/workflows/*.md` |
+| `templates/*.md` | `~/.claude/{plugin-name}/templates/*.md` |
+| `references/*.md` | `~/.claude/{plugin-name}/references/*.md` |
+| `hooks/*.md` | `~/.claude/{plugin-name}/hooks/*.md` |
+| `docker/*` | `~/.claude/{plugin-name}/docker/*` |
+
+**Key insight:** Commands install to a namespaced subdirectory (`commands/{plugin-name}/`) to enable the `/plugin-name:command` pattern. Other files install under the plugin's own directory.
+</folder_structure>
+
+<file_conventions>
+## File Conventions
+
+**Naming patterns:**
+
+| File Type | Pattern | Example |
+|-----------|---------|---------|
+| Plugin name | kebab-case | `neo4j-knowledge-graph` |
+| Command name | `{plugin}:{command}` | `neo4j:query` |
+| Agent name | `{plugin}-{agent}` | `neo4j-kg-indexer` |
+| All files | kebab-case.md | `capture-research.md` |
+
+**Command namespacing rules:**
+- All commands MUST be prefixed with the plugin name
+- Format: `/plugin-name:command-name`
+- Prevents collision with core GSD commands (`gsd:*`)
+- Multiple commands share the same plugin prefix
+
+**Path references within plugin files:**
+- Always use relative paths from plugin root
+- Forward slashes only (cross-platform compatibility)
+- No `..` traversal outside plugin folder
+- Reference other plugin files: `@./workflows/my-workflow.md`
+- After installation, paths resolve to: `@~/.claude/{plugin}/workflows/my-workflow.md`
+
+**File format requirements:**
+- Commands: YAML frontmatter with name, description, allowed-tools
+- Workflows: Process-oriented markdown with clear steps
+- Agents: Role/capabilities definition with process section
+- Templates: Guideline section explaining usage
+- References: Structured documentation with examples
+</file_conventions>
+
+<minimal_plugin_example>
+## Minimal Plugin Example
+
+The simplest possible plugin - a single command:
+
+**Directory structure:**
+```
+hello-world/
+├── plugin.json
+├── README.md
+└── commands/
+    └── hello.md
+```
+
+**plugin.json:**
+```json
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Simple greeting command for GSD",
+  "author": "Developer Name",
+  "gsd": {
+    "minVersion": "1.4.0",
+    "commands": [
+      {
+        "name": "hello-world:greet",
+        "file": "commands/hello.md",
+        "description": "Display a friendly greeting"
+      }
+    ]
+  }
+}
+```
+
+**README.md:**
+```markdown
+# hello-world
+
+A simple greeting command for GSD.
+
+## Installation
+
+\`\`\`bash
+gsd plugin install ./hello-world
+\`\`\`
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/hello-world:greet` | Display a friendly greeting |
+
+## Usage
+
+\`\`\`
+/hello-world:greet
+\`\`\`
+
+Outputs a greeting message to the user.
+```
+
+**commands/hello.md:**
+```markdown
+---
+name: hello-world:greet
+description: Display a friendly greeting
+allowed-tools: []
+---
+
+<process>
+Respond with a friendly greeting to the user.
+
+Say: "Hello from the hello-world plugin! GSD plugin system is working correctly."
+</process>
+```
+
+This minimal example demonstrates:
+- Required files only (plugin.json, README.md, one command)
+- Proper command namespacing (`hello-world:greet`)
+- Correct manifest structure with gsd.commands array
+</minimal_plugin_example>
+
+<complex_plugin_example>
+## Complex Plugin Example
+
+A full-featured plugin with services - the Neo4j knowledge graph from PROJECT.md:
+
+**Directory structure:**
+```
+neo4j-knowledge-graph/
+├── plugin.json
+├── README.md
+├── commands/
+│   ├── query.md
+│   └── status.md
+├── agents/
+│   └── neo4j-kg-indexer.md
+├── workflows/
+│   └── research-capture.md
+├── hooks/
+│   └── post-research.md
+└── docker/
+    └── docker-compose.yml
+```
+
+**plugin.json:**
+```json
+{
+  "name": "neo4j-knowledge-graph",
+  "version": "1.0.0",
+  "description": "Knowledge graph for research capture and semantic querying",
+  "author": {
+    "name": "GSD Team",
+    "email": "dev@example.com"
+  },
+  "repository": "https://github.com/gsd/neo4j-knowledge-graph",
+  "license": "MIT",
+  "keywords": ["knowledge-graph", "neo4j", "research", "semantic"],
+  "gsd": {
+    "minVersion": "1.4.0",
+    "commands": [
+      {
+        "name": "neo4j:query",
+        "file": "commands/query.md",
+        "description": "Query the knowledge graph with Cypher"
+      },
+      {
+        "name": "neo4j:status",
+        "file": "commands/status.md",
+        "description": "Check Neo4j service status"
+      }
+    ],
+    "workflows": [
+      {
+        "name": "research-capture",
+        "file": "workflows/research-capture.md"
+      }
+    ],
+    "agents": [
+      {
+        "name": "neo4j-kg-indexer",
+        "file": "agents/neo4j-kg-indexer.md"
+      }
+    ],
+    "hooks": {
+      "post-research": "hooks/post-research.md"
+    },
+    "services": {
+      "docker-compose": "docker/docker-compose.yml",
+      "healthCheck": "docker/health.sh"
+    }
+  }
+}
+```
+
+**docker/docker-compose.yml:**
+```yaml
+version: '3.8'
+services:
+  neo4j:
+    image: neo4j:5.15
+    container_name: gsd-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/gsd-knowledge
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    restart: unless-stopped
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+```
+
+**commands/query.md:**
+```markdown
+---
+name: neo4j:query
+description: Query the knowledge graph with Cypher
+argument-hint: "<cypher-query>"
+allowed-tools: [Bash, Read]
+---
+
+<process>
+Execute a Cypher query against the Neo4j knowledge graph.
+
+1. Validate the query syntax
+2. Execute against Neo4j at bolt://localhost:7687
+3. Format and return results
+
+Use cypher-shell for query execution:
+\`\`\`bash
+cypher-shell -u neo4j -p gsd-knowledge "MATCH (n) RETURN n LIMIT 10"
+\`\`\`
+</process>
+```
+
+**hooks/post-research.md:**
+```markdown
+---
+trigger: post-research
+---
+
+<process>
+After research phase completion, index discovered concepts into the knowledge graph.
+
+1. Read research summary from .planning/phases/{phase}/research/
+2. Extract key concepts, relationships, and decisions
+3. Create Cypher statements to add nodes and edges
+4. Execute against Neo4j to persist the knowledge
+
+This enables future research phases to query prior discoveries.
+</process>
+```
+
+This complex example demonstrates:
+- Full manifest with all optional fields
+- Multiple commands with namespacing
+- Custom workflow for research capture
+- Subagent for specialized indexing tasks
+- Hook integration with GSD lifecycle
+- Self-contained Docker services
+</complex_plugin_example>
+
 <command_registration>
 ## Command Registration
 
