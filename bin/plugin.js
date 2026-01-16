@@ -784,13 +784,24 @@ function listPlugins() {
 
     try {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const hasServices = !!manifest.gsd?.services?.['docker-compose'];
+      const enabled = manifest._installed?.enabled !== false;
+
+      // Get service status only for enabled plugins with services
+      let serviceStatus = null;
+      if (hasServices && enabled) {
+        serviceStatus = getServiceStatus(manifest.name || entry.name);
+      }
+
       plugins.push({
         name: manifest.name || entry.name,
         version: manifest.version || 'unknown',
         description: manifest.description || '',
         linked: manifest._installed?.linked === true,
-        enabled: manifest._installed?.enabled !== false, // default true if not set
+        enabled: enabled,
         date: manifest._installed?.date,
+        hasServices: hasServices,
+        serviceStatus: serviceStatus,
       });
     } catch {
       // Warn about corrupted plugin.json but continue
@@ -809,7 +820,20 @@ function listPlugins() {
   for (const plugin of plugins) {
     const linkedIndicator = plugin.linked ? ` ${yellow}(linked)${reset}` : '';
     const disabledIndicator = !plugin.enabled ? ` ${dim}(disabled)${reset}` : '';
-    console.log(`  ${cyan}${plugin.name}${reset} v${plugin.version}${linkedIndicator}${disabledIndicator}`);
+
+    // Service status indicator
+    let serviceIndicator = '';
+    if (plugin.hasServices && plugin.enabled) {
+      if (plugin.serviceStatus?.reason === 'no-docker') {
+        serviceIndicator = ` ${dim}\u25cc${reset}`; // dim hollow dot - Docker unavailable
+      } else if (plugin.serviceStatus?.running) {
+        serviceIndicator = ` ${green}\u25cf${reset}`; // green dot - running
+      } else {
+        serviceIndicator = ` ${yellow}\u25cb${reset}`; // yellow hollow dot - not running
+      }
+    }
+
+    console.log(`  ${cyan}${plugin.name}${reset} v${plugin.version}${linkedIndicator}${disabledIndicator}${serviceIndicator}`);
     if (plugin.description) {
       console.log(`    ${dim}${plugin.description}${reset}`);
     }
@@ -904,6 +928,45 @@ function showPluginInfo(pluginName) {
     console.log(`    ${yellow}Linked from:${reset} ${installed.source}`);
   } else {
     console.log(`    Location: ~/.claude/${manifest.name}/`);
+  }
+
+  // Services section (only if plugin has services)
+  if (gsd.services) {
+    console.log(`\n  ${cyan}Services:${reset}`);
+
+    // Show docker-compose file path
+    if (gsd.services['docker-compose']) {
+      console.log(`    Docker Compose: ${gsd.services['docker-compose']}`);
+    }
+
+    // Show health check path if configured
+    if (gsd.services.healthCheck) {
+      console.log(`    Health Check: ${gsd.services.healthCheck}`);
+    }
+
+    // Get and show service status
+    const status = getServiceStatus(pluginName);
+    if (status.reason === 'no-docker') {
+      console.log(`    Status: ${dim}Docker unavailable${reset}`);
+    } else if (status.running) {
+      console.log(`    Status: ${green}Running${reset} (${status.containers} container${status.containers !== 1 ? 's' : ''})`);
+
+      // If running and healthCheck configured, show health status
+      if (gsd.services.healthCheck) {
+        const health = checkServiceHealth(pluginName);
+        if (health.status === 'healthy') {
+          console.log(`    Health: ${green}Healthy${reset}`);
+        } else if (health.status === 'unhealthy') {
+          console.log(`    Health: ${red}Unhealthy${reset}${health.error ? ` - ${health.error}` : ''}`);
+        } else if (health.status === 'missing-script') {
+          console.log(`    Health: ${yellow}Script not found${reset}`);
+        } else {
+          console.log(`    Health: ${dim}Unknown${reset}`);
+        }
+      }
+    } else {
+      console.log(`    Status: ${yellow}Stopped${reset}`);
+    }
   }
 
   console.log('');
