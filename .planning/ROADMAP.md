@@ -19,7 +19,7 @@ None
 - [x] **Phase 3: Plugin Discovery** - List available and installed plugins
 - [x] **Phase 4: Plugin Activation** - Command-based activation with optional parameters
 - [x] **Phase 5: Self-Contained Dependencies** - Docker and service support within plugin folders
-- [ ] **Phase 5.1: Plugin Builder** - CLI-driven workflow for creating new plugins (INSERTED)
+- [x] **Phase 5.1: Plugin Builder** - CLI-driven workflow for creating new plugins (INSERTED)
 - [ ] **Phase 6: Documentation** - Plugin development guide with basic-to-complex examples
 
 ## Phase Details
@@ -93,8 +93,8 @@ Plans:
 - Generates complete plugin structure based on user's answers
 
 Plans:
-- [ ] 05.1-01: Plugin builder workflow and component templates
-- [ ] 05.1-02: Plugin-build-new command implementation
+- [x] 05.1-01: Plugin builder workflow and component templates
+- [x] 05.1-02: Plugin-build-new command implementation
 
 ### Phase 6: Documentation
 **Goal**: Comprehensive plugin development guide with examples from simple to complex
@@ -118,5 +118,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Plugin Discovery | 2/2 | Complete | 2026-01-16 |
 | 4. Plugin Activation | 2/2 | Complete | 2026-01-16 |
 | 5. Self-Contained Dependencies | 3/3 | Complete | 2026-01-16 |
-| 5.1 Plugin Builder (INSERTED) | 0/? | Not started | - |
+| 5.1 Plugin Builder (INSERTED) | 2/2 | Complete | 2026-01-17 |
 | 6. Documentation | 0/2 | Not started | - |
