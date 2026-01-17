@@ -3,52 +3,56 @@
   "max_entries": 50,
   "entries": [
     {
-      "agent_id": "ae52a03",
-      "task_description": "Parallel: Execute 01-01-PLAN.md",
-      "phase": "01",
+      "agent_id": "a7012c0",
+      "task_description": "Parallel: Execute 05-01-PLAN.md",
+      "phase": "05",
       "plan": "01",
-      "parallel_group": "pg-wave1",
-      "granularity": "plan",
+      "parallel_group": "pg-phase5",
       "wave": 1,
       "depends_on": [],
-      "timestamp": "2026-01-16T07:20:15Z",
-      "status": "spawned",
-      "files_modified": [],
-      "completion_timestamp": null,
+      "timestamp": "2026-01-16T23:31:24Z",
+      "status": "completed",
+      "files_modified": [
+        "bin/plugin.js"
+      ],
+      "completion_timestamp": "2026-01-16T23:34:04Z",
       "deviations": []
     },
     {
-      "agent_id": "a0b131d",
-      "task_description": "Parallel: Execute 01-02-PLAN.md",
-      "phase": "01",
+      "agent_id": "a00d2a0",
+      "task_description": "Parallel: Execute 05-02-PLAN.md",
+      "phase": "05",
       "plan": "02",
-      "parallel_group": "pg-wave2",
-      "granularity": "plan",
+      "parallel_group": "pg-phase5",
       "wave": 2,
       "depends_on": [
-        "01-01"
+        "05-01"
       ],
-      "timestamp": "2026-01-16T12:47:49Z",
-      "status": "spawned",
-      "files_modified": [],
-      "completion_timestamp": null,
+      "timestamp": "2026-01-16T23:34:26Z",
+      "status": "completed",
+      "files_modified": [
+        "bin/plugin.js"
+      ],
+      "completion_timestamp": "2026-01-16T23:36:57Z",
       "deviations": []
     },
     {
-      "agent_id": "a66397d",
-      "task_description": "Parallel: Execute 01-03-PLAN.md",
-      "phase": "01",
+      "agent_id": "a675187",
+      "task_description": "Parallel: Execute 05-03-PLAN.md",
+      "phase": "05",
       "plan": "03",
-      "parallel_group": "pg-wave2",
-      "granularity": "plan",
+      "parallel_group": "pg-phase5",
       "wave": 2,
       "depends_on": [
-        "01-01"
+        "05-01"
       ],
-      "timestamp": "2026-01-16T12:47:49Z",
-      "status": "spawned",
-      "files_modified": [],
-      "completion_timestamp": null,
+      "timestamp": "2026-01-16T23:37:19Z",
+      "status": "completed",
+      "files_modified": [
+        "bin/plugin.js",
+        "get-shit-done/references/plugin-format.md"
+      ],
+      "completion_timestamp": "2026-01-16T23:39:44Z",
       "deviations": []
     }
   ]

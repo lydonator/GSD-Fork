@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-16)
 
 **Core value:** Easy installation, clean separation, and discoverability
-**Current focus:** Phase 5 — Self-Contained Dependencies (ready to plan)
+**Current focus:** Phase 6 — Documentation (ready to plan)
 
 ## Current Position
 
-Phase: 4 of 6 (Plugin Activation) — Complete
-Plan: 2 of 2 in current phase
+Phase: 5 of 6 (Self-Contained Dependencies) — Complete
+Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-16 — Completed Phase 4 (2 plans, 4 tasks)
+Last activity: 2026-01-16 — Completed Phase 5 (3 plans, 6 tasks, parallel execution)
 
-Progress: ██████░░░░ 67%
+Progress: █████████░ 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: ~4 min/plan
-- Total execution time: ~45 min (wall clock, sequential with context isolation)
+- Total plans completed: 13
+- Average duration: ~5 min/plan
+- Total execution time: ~65 min (wall clock, mixed sequential/parallel)
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: ██████░░░░ 67%
 | 2. Plugin Installation | 3/3 | ~12 min | ~4 min |
 | 3. Plugin Discovery | 2/2 | ~13 min | ~6 min |
 | 4. Plugin Activation | 2/2 | ~10 min | ~5 min |
+| 5. Self-Contained Dependencies | 3/3 | ~20 min | ~7 min |
 
 **Recent Trend:**
-- Last 3 plans: 03-02 (8m), 04-01 (5m), 04-02 (5m)
-- Trend: Consistent
+- Last 3 plans: 05-01 (8m), 05-02 (6m), 05-03 (6m)
+- Trend: Consistent (parallel execution with context isolation)
 
 ## Accumulated Context
 
@@ -52,6 +53,9 @@ Recent decisions affecting current work:
 | 01-03 | Hook failures don't block GSD | Fault isolation |
 | 04-01 | `_installed.enabled` flag controls activation | Allows disable without uninstall |
 | 04-02 | Commands filtered by enabled state | Disabled plugins hidden from discovery |
+| 05-01 | Docker compose v2 first, fallback to v1 | Modern Docker preferred |
+| 05-01 | Service failures don't block enable/disable | Fault isolation |
+| 05-03 | -v --remove-orphans on uninstall | Clean slate for reinstall |
 
 ### Deferred Issues
 
@@ -68,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-16
-Stopped at: Phase 4 complete (sequential execution with context isolation)
+Stopped at: Phase 5 complete (parallel execution - 3 agents, 3 plans)
 Resume file: None

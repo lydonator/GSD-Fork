@@ -18,7 +18,7 @@ None
 - [x] **Phase 2: Plugin Installation** - Package-manager style install from git repos and local paths
 - [x] **Phase 3: Plugin Discovery** - List available and installed plugins
 - [x] **Phase 4: Plugin Activation** - Command-based activation with optional parameters
-- [ ] **Phase 5: Self-Contained Dependencies** - Docker and service support within plugin folders
+- [x] **Phase 5: Self-Contained Dependencies** - Docker and service support within plugin folders
 - [ ] **Phase 6: Documentation** - Plugin development guide with basic-to-complex examples
 
 ## Phase Details
@@ -74,9 +74,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: Docker Compose detection and lifecycle hooks
-- [ ] 05-02: Service health checks and status reporting
-- [ ] 05-03: Container cleanup on plugin uninstall
+- [x] 05-01: Docker Compose detection and lifecycle hooks
+- [x] 05-02: Service health checks and status reporting
+- [x] 05-03: Container cleanup on plugin uninstall
 
 ### Phase 6: Documentation
 **Goal**: Comprehensive plugin development guide with examples from simple to complex
@@ -99,5 +99,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Plugin Installation | 3/3 | Complete | 2026-01-16 |
 | 3. Plugin Discovery | 2/2 | Complete | 2026-01-16 |
 | 4. Plugin Activation | 2/2 | Complete | 2026-01-16 |
-| 5. Self-Contained Dependencies | 0/3 | Not started | - |
+| 5. Self-Contained Dependencies | 3/3 | Complete | 2026-01-16 |
 | 6. Documentation | 0/2 | Not started | - |
