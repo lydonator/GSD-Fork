@@ -21,6 +21,8 @@ Plugin management for GSD. Install, uninstall, and manage plugins.
 - `/gsd:plugin commands` - List all commands from enabled plugins
 
 **Note:** Disabled plugins don't expose commands. Use `/gsd:plugin list` to see all plugins with enabled/disabled status, and `/gsd:plugin commands` to see only commands from enabled plugins.
+
+For plugin development, see `/gsd:plugin-build-new` or `~/.claude/get-shit-done/references/plugin-developer-guide.md`.
 </overview>
 
 <process>

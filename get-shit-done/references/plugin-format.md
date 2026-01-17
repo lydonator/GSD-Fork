@@ -1,4 +1,6 @@
 <overview>
+For a getting-started guide, see `plugin-developer-guide.md`.
+
 Plugins extend GSD functionality through self-contained packages. This reference defines the plugin manifest schema, folder structure, and registration patterns.
 
 **Key insight:** A plugin is a self-contained folder with a `plugin.json` manifest that tells GSD what the plugin provides (commands, workflows, agents), what it needs (GSD version, services), and how to activate it.
